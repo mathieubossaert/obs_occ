@@ -4,7 +4,7 @@ var formulaire, fenetreFormulaire, listObs, listStruct, comboAjoutObs, comboAjou
     nbDuplicata = 0, modeDuplication = false, toucheENTREE = true, comboPheno,
     comboStatutValidation, numerisat, numerisateur, profil, comboPrecision, comboDetermination,
     comboTypeEffectif, focusEffectifActif = true, comboLieuDit, idSociete, nomSociete,
-    largeurFenetreFormulaire = 990, largeurColonneFormulaire = 0;
+    largeurFenetreFormulaire = 990, largeurColonneFormulaire = 0,  comboCritere1;
 
 Ext.onReady(function() {
     new Ext.KeyMap(document, {
@@ -75,8 +75,48 @@ Ext.onReady(function() {
                     modeRequete = ''
                     this.store.removeAll();
                 }
+            },
+            select: function() {
+                // vérification auprès du référentiel
+                Ext.Ajax.request({
+                  url: '../Modeles/Json/jCdNom.php?appli=' + GetParam('appli'),
+                  params: {
+                      valeur: comboEspeces.value,
+                      filtre: Ext.getCmp('regne').value
+                  },
+                  callback: function(options, success, response) {
+                    if (success) {
+                        var obj = Ext.util.JSON.decode(response.responseText); // décodage JSON du résultat du POST
+                        if (obj.success) {
+                            verifieTaxonOK(obj.data);
+                            Ext.getCmp('cd_nom').setValue(obj.data);
+                            // vérification auprès du référentiel
+                            Ext.Ajax.request({
+                              url: '../Modeles/Json/JEspecesGroupes.php?appli=' + GetParam('appli'),
+                              params: {
+                                  cd_nom: obj.data
+                              },
+                              callback: function(options, success, response) {
+                                if (success) {
+                                   hiddenListeGroupes.setValue(Ext.util.JSON.decode(response.responseText));
+                                   refreshListGroupe(Ext.util.JSON.decode(response.responseText))
+                                }
+                              }
+                            });
+                        }
+                        else {
+                            Ext.MessageBox.show({
+                                title: obj.errorMessage,
+                                msg: obj.data,
+                                buttons: Ext.MessageBox.OK,
+                                icon: Ext.MessageBox.WARNING
+                            });
+                        }
+                    }
+                  }
+                });
             }
-        }
+        }, 
     });
     //Combo d'auto-complétion "espèces usuelles"
     comboEspecesUsuelles = new Ext.form.ComboBox({
@@ -346,7 +386,7 @@ Ext.onReady(function() {
             fields: ['code', 'libelle']
         }),
         displayField: 'libelle',
-	valueField: 'code',
+        valueField: 'code',
         tbar: [
             comboAjoutObs, {
                 text: 'Suppr. sélection',
@@ -381,7 +421,7 @@ Ext.onReady(function() {
             fields: ['code', 'libelle']
         }),
         displayField: 'libelle',
-	valueField: 'code',
+        valueField: 'code',
         tbar: [
             comboAjoutStruct, {
                 text: 'Suppr. sélection',
@@ -389,6 +429,29 @@ Ext.onReady(function() {
             }
         ]
     });
+    hiddenListeGroupes = new Ext.form.Hidden({
+      id : 'taxon_groups',
+      listeners: {
+        change : function(){alert('change');},
+        update : function(){alert('update');},
+        select : function(){alert('select');}
+      }
+    });
+    comboCritere1 = new Ext.form.ComboBox({
+        store: new Ext.data.JsonStore({
+            url: '../Modeles/Json/jListEnum.php?appli=' + GetParam('appli') + '&typeEnum=saisie.enum_type_effectif',
+            fields: ['val']
+        }),
+        id: 'critere_1',
+        emptyText: 'Sélectionnez',
+        triggerAction: 'all',
+        mode: 'local',
+        forceSelection: true,
+        displayField: 'val',
+        valueField: 'val',
+        fieldLabel: "Critère 1"
+    });
+    
     var listStructPanel = new Ext.Panel({
         fieldLabel: 'Liste des structures',
         items: listStruct
@@ -765,6 +828,7 @@ Ext.onReady(function() {
                             comboTypeEffectif,
                             comboPheno,
                             comboPrecision,
+                            comboCritere1,
                             listObsPanel,
                             {
                                 xtype: 'textarea',
@@ -1706,3 +1770,18 @@ function verifieTaxonOK(cd_nom) {
         }
     });
 }
+
+function refreshListGroupe(list)  {
+  //Si une des listes correspond à un champs spécifique
+  list.forEach(function(item) {
+    if (item == 108 ) {
+      comboCritere1.setFieldLabel("Comportement");
+      comboCritere1.store.proxy = new Ext.data.HttpProxy({
+          url: '../Modeles/Json/jListEnum.php?appli=' + GetParam('appli') + '&typeEnum=saisie.enum_type_effectif',
+          api: comboCritere1.store.api
+      });
+      console.log('oiseaux');
+    }
+});
+}
+
