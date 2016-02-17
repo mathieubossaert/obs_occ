@@ -31,7 +31,7 @@
             id_lieu_dit, ign_bd_topo.lieu_dit.nom AS lieu_dit, observateur, md.liste_nom_auteur(observateur
             ) AS observat, validateur, structure, md.liste_nom_structure(structure) AS struct, localisation, id_etude, nom_etude, id_protocole, libelle,
             diffusable, remarque_obs, statut_validation, decision_validation, url_photo, (numerisateurs.nom || ' ' || numerisateurs.prenom) AS numerisat, longitude,
-            commentaire_photo, (validateurs.nom || ' ' || validateurs.prenom) AS validat
+            commentaire_photo, (validateurs.nom || ' ' || validateurs.prenom) AS validat, critere_1
         FROM  tri  join saisie.saisie_observation USING(id_obs)
         LEFT JOIN md.etude using(id_etude) left JOIN md.protocole USING(id_protocole)
         LEFT JOIN md.personne AS numerisateurs ON numerisateur = numerisateurs.id_personne
@@ -43,7 +43,6 @@
         $row_number = $start + 1 +$limit;  
         $req .= 'WHERE row_number > ' . $start . ' AND row_number < ' . $row_number;  
     }
-    
     $rs = $cnxPgObsOcc->executeSql($req);
     $rsTot = $cnxPgObsOcc->executeSql('SELECT COUNT(*) FROM SAISIE.SAISIE_OBSERVATION
         LEFT JOIN MD.ETUDE USING(id_etude) LEFT JOIN MD.PROTOCOLE USING(id_protocole)

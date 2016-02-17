@@ -382,6 +382,8 @@ Ext.onReady(function() {
         blankText: 'Veuillez sélectionner au moins un observateur !',
         delimiter: '&',
         width: 500,
+        height: 100,
+        maxHeight : 100,
         store: new Ext.data.ArrayStore({
             fields: ['code', 'libelle']
         }),
@@ -437,18 +439,20 @@ Ext.onReady(function() {
         select : function(){alert('select');}
       }
     });
+    
+    
     comboCritere1 = new Ext.form.ComboBox({
         store: new Ext.data.JsonStore({
-            url: '../Modeles/Json/jListEnum.php?appli=' + GetParam('appli') + '&typeEnum=saisie.enum_type_effectif',
-            fields: ['val']
+            url: '../Modeles/Json/jListCritere.php?appli=' + GetParam('appli') + '&id_liste=1',
+            fields: ['id_critere', 'nom_critere']
         }),
         id: 'critere_1',
         emptyText: 'Sélectionnez',
         triggerAction: 'all',
         mode: 'local',
         forceSelection: true,
-        displayField: 'val',
-        valueField: 'val',
+        displayField: 'nom_critere',
+        valueField: 'id_critere',
         fieldLabel: "Critère 1"
     });
     
@@ -827,14 +831,15 @@ Ext.onReady(function() {
                             },
                             comboTypeEffectif,
                             comboPheno,
-                            comboPrecision,
                             comboCritere1,
+                            comboPrecision,
                             listObsPanel,
                             {
                                 xtype: 'textarea',
-                                fieldLabel: "Remarques d'observation",
+                                fieldLabel: "Remarques",
                                 id: 'remarque_obs',
                                 maxLength: 254,
+                                height: 20,
                                 listeners: {
                                     focus: function() {
                                         toucheENTREE = false;
@@ -1453,7 +1458,7 @@ function supprimeSelection(cb, lb) {
 }
 
 //Ajout dans la liste de l'élément sélectionné par la combo
-function selectionne(cb, lb) {
+function selectionne(cb, lb) {list
     lb.store.add(
         new lb.store.recordType({
             code: cb.value,
@@ -1557,6 +1562,19 @@ function finaliseFormulaire() {
     // traitement du nom de la photo
     Ext.getCmp('nom_photo').setValue(nomPhoto(Ext.getCmp('url_photo').value));
     Ext.getCmp('boutonInfoPhoto').setTooltip(Ext.getCmp('commentaire_photo').value);
+    
+    Ext.Ajax.request({
+      url: '../Modeles/Json/JEspecesGroupes.php?appli=' + GetParam('appli'),
+      params: {
+          cd_nom: Ext.getCmp('cd_nom').value
+      },
+      callback: function(options, success, response) {
+        if (success) {
+           hiddenListeGroupes.setValue(Ext.util.JSON.decode(response.responseText));
+           refreshListGroupe(Ext.util.JSON.decode(response.responseText))
+        }
+      }
+    });
 }
 
 //Traitement du "code_insee"
@@ -1773,15 +1791,22 @@ function verifieTaxonOK(cd_nom) {
 
 function refreshListGroupe(list)  {
   //Si une des listes correspond à un champs spécifique
+  nogroup = true;
   list.forEach(function(item) {
     if (item == 108 ) {
       comboCritere1.setFieldLabel("Comportement");
       comboCritere1.store.proxy = new Ext.data.HttpProxy({
-          url: '../Modeles/Json/jListEnum.php?appli=' + GetParam('appli') + '&typeEnum=saisie.enum_type_effectif',
+          url:  '../Modeles/Json/jListCritere.php?appli=' + GetParam('appli') + '&id_liste=1',
           api: comboCritere1.store.api
       });
-      console.log('oiseaux');
+      comboCritere1.store.load();
+      comboCritere1.show();
+      nogroup =false;
     }
-});
+  });
+  if (nogroup) {
+    comboCritere1.hide();
+    comboCritere1.setValue();    
+  }
 }
 
