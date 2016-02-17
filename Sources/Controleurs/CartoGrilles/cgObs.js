@@ -237,7 +237,8 @@ function basculeEcran(sens) {
             {name: 'observat'},
             {name: 'struct'},
             {name: 'commentaire_photo'},
-            {name: 'url_photo'}
+            {name: 'url_photo'},
+            {name: 'critere_1'}
         ]
     });
     donneesGrille = new (Ext.extend(Ext.data.GroupingStore, new GeoExt.data.FeatureStoreMixin))({

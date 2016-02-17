@@ -188,6 +188,9 @@
             if (isset($_POST['commentaire_photo'])) {
                 $obs->commentaire_photo = $_POST['commentaire_photo'];
             }
+            if (isset($_POST['critere_1'])) {
+                $obs->critere_1 = $_POST['critere_1'];
+            }
             switch ($_POST['action']) {
                 case 'Ajouter':
                     $obs->numerisateur = decrypteRSA($_GET['appli'], $_SESSION[$_GET['appli']]['numerisateur']['code']);

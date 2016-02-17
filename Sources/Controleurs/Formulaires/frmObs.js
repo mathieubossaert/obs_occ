@@ -447,16 +447,16 @@ Ext.onReady(function() {
     
     comboCritere1 = new Ext.form.ComboBox({
         store: new Ext.data.JsonStore({
-            url: '../Modeles/Json/jListCritere.php?appli=' + GetParam('appli') + '&id_liste=1',
-            fields: ['id_critere', 'nom_critere']
+            url: '../Modeles/Json/jListEnum.php?appli=' + GetParam('appli') + '&typeEnum=saisie.enum_phenologie',
+            fields: ['val']
         }),
         id: 'critere_1',
         emptyText: 'Sélectionnez',
         triggerAction: 'all',
         mode: 'local',
         forceSelection: true,
-        displayField: 'nom_critere',
-        valueField: 'id_critere',
+        displayField: 'val',
+        valueField: 'val',
         fieldLabel: "Critère 1"
     });
     
@@ -492,7 +492,15 @@ Ext.onReady(function() {
                 id: 'id_obs'
             }, {
                 xtype: 'hidden',
-                id: 'cd_nom'
+                id: 'cd_nom',
+                listeners: {
+                  keyup: function() {
+                            console.log('keyup');
+                        },
+                  change: function() {
+                            console.log('change');
+                        },
+                }
             }, {
                 xtype: 'hidden',
                 id: 'observateur'
@@ -1120,6 +1128,8 @@ Ext.onReady(function() {
             }
         }
     });
+    
+
 });
 
 //Affichage en mode ajout
@@ -1567,7 +1577,12 @@ function finaliseFormulaire() {
     Ext.getCmp('nom_photo').setValue(nomPhoto(Ext.getCmp('url_photo').value));
     Ext.getCmp('boutonInfoPhoto').setTooltip(Ext.getCmp('commentaire_photo').value);
     
-    Ext.Ajax.request({
+    Ext.getCmp('cd_nom').addListener('change', 
+     function() { 
+       console.log("aaaa");
+      }
+    );
+    /*Ext.Ajax.request({
       url: '../Modeles/Json/JEspecesGroupes.php?appli=' + GetParam('appli'),
       params: {
           cd_nom: Ext.getCmp('cd_nom').value
@@ -1578,7 +1593,7 @@ function finaliseFormulaire() {
            refreshListGroupe(Ext.util.JSON.decode(response.responseText))
         }
       }
-    });
+    });*/
 }
 
 //Traitement du "code_insee"
@@ -1598,7 +1613,7 @@ function traiteCodeInsee(geom, traiteCodeInseeFonctionRetour) {
                 }
                 else {
                     Ext.getCmp('code_insee').setValue('');
-                    Ext.getCmp('nom').setValue('Introuvable dans le référentiel IGN');                    
+                    Ext.getCmp('nom').setValue('Introuvable dans le référentiel IGN');
                 }
                 if (traiteCodeInseeFonctionRetour) {
                    traiteCodeInseeFonctionRetour();
@@ -1800,7 +1815,7 @@ function refreshListGroupe(list)  {
     if (item == 108 ) {
       comboCritere1.setFieldLabel("Comportement");
       comboCritere1.store.proxy = new Ext.data.HttpProxy({
-          url:  '../Modeles/Json/jListCritere.php?appli=' + GetParam('appli') + '&id_liste=1',
+          url: '../Modeles/Json/jListEnum.php?appli=' + GetParam('appli') + '&typeEnum=saisie.enum_type_effectif',
           api: comboCritere1.store.api
       });
       comboCritere1.store.load();
@@ -1813,4 +1828,3 @@ function refreshListGroupe(list)  {
     comboCritere1.setValue();    
   }
 }
-
