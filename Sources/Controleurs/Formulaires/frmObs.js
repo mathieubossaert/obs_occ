@@ -1,4 +1,4 @@
-//Variables globales utilisées pour gérer le formulaire
+  //Variables globales utilisées pour gérer le formulaire
 var formulaire, fenetreFormulaire, listObs, listStruct, comboAjoutObs, comboAjoutStruct,
     comboEspeces, comboEspecesUsuelles, modeRequete = '', nbImport = 0,
     nbDuplicata = 0, modeDuplication = false, toucheENTREE = true, comboPheno,
@@ -43,6 +43,8 @@ Ext.onReady(function() {
         displayField: 'espece',
         valueField: 'espece',
         fieldLabel: 'Espèce (latin)',
+        typeAhead: true,
+        forceselection:true,
         listeners: {
             keyup: function(field, event) {
                 if (this.getRawValue().length >= 3) { // si au moins 3 lettres tapées
@@ -99,7 +101,6 @@ Ext.onReady(function() {
                               },
                               callback: function(options, success, response) {
                                 if (success) {
-                                   hiddenListeGroupes.setValue(Ext.util.JSON.decode(response.responseText));
                                    refreshListGroupe(Ext.util.JSON.decode(response.responseText))
                                 }
                               }
@@ -178,6 +179,7 @@ Ext.onReady(function() {
                             switch (nbEspeces) {
                                 case 1:
                                     comboEspeces.setValue(comboEspeces.store.getAt(0).data['espece']);
+                                    comboEspeces.fireEvent('select');
                                     break;
                                 case 2:
                                     var premiereEspece = comboEspeces.store.getAt(0).data['espece'];
@@ -435,29 +437,20 @@ Ext.onReady(function() {
             }
         ]
     });
-    hiddenListeGroupes = new Ext.form.Hidden({
-      id : 'taxon_groups',
-      listeners: {
-        change : function(){alert('change');},
-        update : function(){alert('update');},
-        select : function(){alert('select');}
-      }
-    });
-    
     
     comboCritere1 = new Ext.form.ComboBox({
-        store: new Ext.data.JsonStore({
-            url: '../Modeles/Json/jListEnum.php?appli=' + GetParam('appli') + '&typeEnum=saisie.enum_phenologie',
-            fields: ['val']
-        }),
-        id: 'critere_1',
-        emptyText: 'Sélectionnez',
-        triggerAction: 'all',
-        mode: 'local',
-        forceSelection: true,
-        displayField: 'val',
-        valueField: 'val',
-        fieldLabel: "Critère 1"
+      store: new Ext.data.JsonStore({
+          url: '../Modeles/Json/jListCritere.php?appli=' + GetParam('appli') + '&id_liste=1',
+          fields: ['id_critere', 'nom_critere']
+      }),
+      id: 'critere_1',
+      emptyText: 'Sélectionnez',
+      triggerAction: 'all',
+      mode: 'local',
+      forceSelection: true,
+      displayField: 'nom_critere',
+      valueField: 'nom_critere',
+      fieldLabel: "Comportement"
     });
     
     var listStructPanel = new Ext.Panel({
@@ -494,12 +487,11 @@ Ext.onReady(function() {
                 xtype: 'hidden',
                 id: 'cd_nom',
                 listeners: {
-                  keyup: function() {
-                            console.log('keyup');
-                        },
-                  change: function() {
-                            console.log('change');
-                        },
+                  change:function(rg, r) {
+                    console.log(rg);
+                    console.log(r);
+                    refreshListGroupe() ;
+                  }
                 }
             }, {
                 xtype: 'hidden',
@@ -1577,23 +1569,7 @@ function finaliseFormulaire() {
     Ext.getCmp('nom_photo').setValue(nomPhoto(Ext.getCmp('url_photo').value));
     Ext.getCmp('boutonInfoPhoto').setTooltip(Ext.getCmp('commentaire_photo').value);
     
-    Ext.getCmp('cd_nom').addListener('change', 
-     function() { 
-       console.log("aaaa");
-      }
-    );
-    /*Ext.Ajax.request({
-      url: '../Modeles/Json/JEspecesGroupes.php?appli=' + GetParam('appli'),
-      params: {
-          cd_nom: Ext.getCmp('cd_nom').value
-      },
-      callback: function(options, success, response) {
-        if (success) {
-           hiddenListeGroupes.setValue(Ext.util.JSON.decode(response.responseText));
-           refreshListGroupe(Ext.util.JSON.decode(response.responseText))
-        }
-      }
-    });*/
+     refreshListGroupe();
 }
 
 //Traitement du "code_insee"
@@ -1808,23 +1784,38 @@ function verifieTaxonOK(cd_nom) {
     });
 }
 
-function refreshListGroupe(list)  {
-  //Si une des listes correspond à un champs spécifique
-  nogroup = true;
-  list.forEach(function(item) {
-    if (item == 108 ) {
-      comboCritere1.setFieldLabel("Comportement");
-      comboCritere1.store.proxy = new Ext.data.HttpProxy({
-          url: '../Modeles/Json/jListEnum.php?appli=' + GetParam('appli') + '&typeEnum=saisie.enum_type_effectif',
-          api: comboCritere1.store.api
+function refreshListGroupe()  {
+  var critere1Value = Ext.getCmp('critere_1').value;
+  comboCritere1.hide();
+  comboCritere1.setValue();
+  if (Ext.getCmp('cd_nom').value) {
+    Ext.Ajax.request({
+      url: '../Modeles/Json/JEspecesGroupes.php?appli=' + GetParam('appli'),
+      params: {
+          cd_nom: Ext.getCmp('cd_nom').value
+      },
+      callback: function(options, success, response) {
+        if (success) {
+           refreshDisplay(Ext.util.JSON.decode(response.responseText))
+        }
+      }
+    });
+
+    var refreshDisplay = function(list) {
+       //Si une des listes correspond à un champs spécifique
+      list.forEach(function(item) {
+        if (Object.keys(CST_Critere1).indexOf(item) !== -1) {
+          comboCritere1.setFieldLabel(CST_Critere1[item].fieldLabel);
+          comboCritere1.store.proxy = new Ext.data.HttpProxy({
+            url: '../Modeles/Json/jListCritere.php?appli=' + GetParam('appli') + '&id_liste='+CST_Critere1[item].idListeCritere,
+            api: comboCritere1.store.api
+          });
+          comboCritere1.store.load();
+          comboCritere1.setValue(critere1Value);
+          comboCritere1.show();
+        }
       });
-      comboCritere1.store.load();
-      comboCritere1.show();
-      nogroup =false;
     }
-  });
-  if (nogroup) {
-    comboCritere1.hide();
-    comboCritere1.setValue();    
   }
+  
 }

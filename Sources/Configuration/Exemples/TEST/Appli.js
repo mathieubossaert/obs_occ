@@ -24,3 +24,11 @@ var CST_id_protocole = null;
 
 // Activation du cryptage RSA  (désactivé pour le site de démo)
 var CST_Cryptage = true; // idem que "PostGreSQL.php"
+
+const CST_Critere1 = {
+  108 : {
+    'fieldLabel' : 'Comportement',
+    'idListeCritere':1
+  }
+};
+
