@@ -95,6 +95,7 @@
                             AND cd_nom IN (
                               SELECT DISTINCT(cd_ref) FROM INPN.TAXREF WHERE regne = '" . $_REQUEST['filtre'] . "' AND nom_vern = '" . $critere . "'
                             )
+                            -- cd nom = cd_ref AND regne = '" . $_REQUEST['filtre'] . "' AND nom_vern = '" . $critere . "'
                         ) SELECT DISTINCT(nom_complet) AS espece 
                         FROM (
                           SELECT nom_complet FROM TAXONS 
