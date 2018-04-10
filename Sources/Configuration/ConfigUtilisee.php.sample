@@ -33,9 +33,11 @@
     switch ($_GET['appli']) {
         case 'ObsOccTest':
             $configInstance = 'Configuration/Exemples/TEST';
+            define('CST_PROJ_BDD', '2154');
             break;
         case 'ObsOccPnP':
             $configInstance = 'Configuration/EnProduction/PnP';
+            define('CST_PROJ_BDD', '2154');
             break;
         default:
             header('Location: ../../index.html'); // retour à la page d'accueil de l'application
