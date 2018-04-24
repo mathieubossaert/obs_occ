@@ -41,9 +41,10 @@
             
     if ($limit !== 'AUCUNE') {
         $row_number = $start + 1 +$limit;  
-        $req .= 'WHERE row_number > ' . $start . ' AND row_number < ' . $row_number;  
+        $req .= 'WHERE row_number > ' . $start . ' AND row_number < ' . $row_number; 
+        $req .= 'order by ' . $sort . ' ' . $dir . ' NULLS LAST;';
     }
-    
+    $req .= 'order by ' . $sort . ' ' . $dir;
     $rs = $cnxPgObsOcc->executeSql($req);
     $rsTot = $cnxPgObsOcc->executeSql('SELECT COUNT(*) FROM SAISIE.SAISIE_OBSERVATION
         LEFT JOIN MD.ETUDE USING(id_etude) LEFT JOIN MD.PROTOCOLE USING(id_protocole)
