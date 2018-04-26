@@ -26,14 +26,14 @@
                       SELECT DISTINCT(split_part(nom_vern, ' ', 1)) AS espece 
                       FROM INPN.TAXREF 
                       WHERE regne = '" . $_REQUEST['filtre'] . "' 
-                        AND UNACCENT(split_part(nom_vern, ' ', 1)) ILIKE UNACCENT('" . $critere . "%') ORDER BY espece
+                        AND f_unaccent(nom_vern) ILIKE UNACCENT('" . $critere . "%') ORDER BY espece
                       LIMIT 15
                     )
                     UNION ALL (SELECT '-') 
                     UNION ALL (
                       SELECT DISTINCT(nom_vern) AS espece FROM 
                       INPN.TAXREF WHERE regne = '" . $_REQUEST['filtre'] . "' AND 
-                      UNACCENT(nom_vern) ILIKE UNACCENT('" . $critere . "%') ORDER BY espece
+                      f_unaccent(nom_vern) ILIKE UNACCENT('" . $critere . "%') ORDER BY espece
                       LIMIT 15
                     )";
             }
@@ -47,7 +47,7 @@
                 $req = "SELECT DISTINCT(nom_vern) AS espece 
                     FROM INPN.TAXREF 
                     WHERE regne = '" . $_REQUEST['filtre'] . "' 
-                      AND UNACCENT(nom_vern) ILIKE UNACCENT('" . $critere . "%') 
+                      AND f_unaccent(nom_vern) ILIKE UNACCENT('" . $critere . "%') 
                     ORDER BY espece
                     LIMIT 30";
             }
