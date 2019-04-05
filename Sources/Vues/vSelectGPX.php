@@ -9,7 +9,7 @@
         <!-- Définition du jeu de caractères -->
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <!-- Support de cartes Google (sensor=false <=> périphérique GPS non connecté) -->
-        <script type='text/javascript' src='http://maps.google.com/maps/api/js?sensor=false'></script>
+        <script type='text/javascript' src='https://maps.google.com/maps/api/js?sensor=false'></script>
         <!-- Bibliothèque Ext en français (version de production) -->
         <script type="text/javascript" src="<?php echo LIB; ?>/Ext/adapter/ext/ext-base.js"></script>
         <script type="text/javascript" src="<?php echo LIB; ?>/Ext/ext-all.js"></script>
